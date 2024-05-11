@@ -1,3 +1,5 @@
 /be.db
 **/__pycache__
 /app.log
+/test*
+/test/** */
