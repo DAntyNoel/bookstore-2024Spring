@@ -1,7 +1,7 @@
 import logging
 import os
 from flask import Flask
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from flask import request
 from be.view import auth
 from be.view import seller
@@ -9,7 +9,11 @@ from be.view import buyer
 from be.model.store import init_database, init_completed_event
 
 bp_shutdown = Blueprint("shutdown", __name__)
+bp_welcome = Blueprint('welcome', __name__)
 
+@bp_welcome.route('/')
+def welcome():
+    return "bookstore started successfully!", 200
 
 def shutdown_server():
     func = request.environ.get("werkzeug.server.shutdown")
@@ -40,6 +44,7 @@ def be_run():
 
     app = Flask(__name__)
     app.register_blueprint(bp_shutdown)
+    app.register_blueprint(bp_welcome)
     app.register_blueprint(auth.bp_auth)
     app.register_blueprint(seller.bp_seller)
     app.register_blueprint(buyer.bp_buyer)
