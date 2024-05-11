@@ -2,4 +2,4 @@
 **/__pycache__
 /app.log
 /test*
-/test/** */
+/test/**
