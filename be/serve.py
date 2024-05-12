@@ -8,6 +8,8 @@ from be.view import seller
 from be.view import buyer
 from be.model.store import init_database, init_completed_event
 
+from be.model.mongo_conn import connect_mongo
+
 bp_shutdown = Blueprint("shutdown", __name__)
 bp_welcome = Blueprint('welcome', __name__)
 
@@ -49,4 +51,7 @@ def be_run():
     app.register_blueprint(seller.bp_seller)
     app.register_blueprint(buyer.bp_buyer)
     init_completed_event.set()
+
+    if connect_mongo():
+        print("Connected to MongoDB!")
     app.run()
