@@ -65,24 +65,20 @@ class User:
         return 200, "ok"
 
     def check_token(self, user_id: str, token: str) -> Tuple[int, str]:
-        cursor = self.conn.execute("SELECT token from user where user_id=?", (user_id,))
-        row = cursor.fetchone()
+        row = UserMongo.query(user_id=user_id).only('token').first()
         if row is None:
             return error.error_authorization_fail()
-        db_token = row[0]
+        db_token = row.token
         if not self.__check_token(user_id, db_token, token):
             return error.error_authorization_fail()
         return 200, "ok"
 
     def check_password(self, user_id: str, password: str) -> Tuple[int, str]:
-        cursor = self.conn.execute(
-            "SELECT password from user where user_id=?", (user_id,)
-        )
-        row = cursor.fetchone()
+        row = UserMongo.query(user_id=user_id).only('password').first()
         if row is None:
             return error.error_authorization_fail()
 
-        if password != row[0]:
+        if password != row.password:
             return error.error_authorization_fail()
 
         return 200, "ok"
@@ -95,14 +91,13 @@ class User:
                 return code, message, ""
 
             token = jwt_encode(user_id, terminal)
-            cursor = self.conn.execute(
-                "UPDATE user set token= ? , terminal = ? where user_id = ?",
-                (token, terminal, user_id),
-            )
-            if cursor.rowcount == 0:
+            user:UserMongo = UserMongo.query(user_id=user_id).first()
+            if user is None:
                 return error.error_authorization_fail() + ("",)
-            self.conn.commit()
-        except sqlite.Error as e:
+            user.token = token
+            user.terminal = terminal
+            user.save()
+        except mongoengine.errors.MongoEngineException as e:
             return 528, "{}".format(str(e)), ""
         except BaseException as e:
             return 530, "{}".format(str(e)), ""
@@ -117,15 +112,13 @@ class User:
             terminal = "terminal_{}".format(str(time.time()))
             dummy_token = jwt_encode(user_id, terminal)
 
-            cursor = self.conn.execute(
-                "UPDATE user SET token = ?, terminal = ? WHERE user_id=?",
-                (dummy_token, terminal, user_id),
-            )
-            if cursor.rowcount == 0:
+            user:UserMongo = UserMongo.query(user_id=user_id).first()
+            if user is None:
                 return error.error_authorization_fail()
-
-            self.conn.commit()
-        except sqlite.Error as e:
+            user.token = dummy_token
+            user.terminal = terminal
+            user.save()
+        except mongoengine.errors.MongoEngineException as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
             return 530, "{}".format(str(e))
@@ -137,12 +130,12 @@ class User:
             if code != 200:
                 return code, message
 
-            cursor = self.conn.execute("DELETE from user where user_id=?", (user_id,))
-            if cursor.rowcount == 1:
-                self.conn.commit()
+            result = [x for x in UserMongo.query(user_id=user_id)]
+            if len(result) == 1:
+                result[0].delete()
             else:
                 return error.error_authorization_fail()
-        except sqlite.Error as e:
+        except mongoengine.errors.MongoEngineException as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
             return 530, "{}".format(str(e))
@@ -158,14 +151,13 @@ class User:
 
             terminal = "terminal_{}".format(str(time.time()))
             token = jwt_encode(user_id, terminal)
-            cursor = self.conn.execute(
-                "UPDATE user set password = ?, token= ? , terminal = ? where user_id = ?",
-                (new_password, token, terminal, user_id),
-            )
-            if cursor.rowcount == 0:
+            user:UserMongo = UserMongo.query(user_id=user_id).first()
+            if user is None:
                 return error.error_authorization_fail()
-
-            self.conn.commit()
+            user.password = new_password
+            user.token = token
+            user.terminal = terminal
+            user.save()
         except sqlite.Error as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
