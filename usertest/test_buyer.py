@@ -2,50 +2,42 @@ import requests
 from urllib.parse import urljoin
 import argparse
 
+from test_user import login, logout
+
 base_url = 'http://127.0.0.1:5000'
+token = None
+order_id = None
 
-def register():
-    print('register:', end='\t')
+def new_order():
+    print('new_order:', end='\t')
     ret = requests.post(
-        urljoin(base_url, '/auth/register'),
+        urljoin(base_url, '/buyer/new_order'),
         json={
             'user_id': 'admin',
-            'password': 'admin'
+            'order_id': 'order_1',
+            'books':[
+                {
+                    'id': '10539399',
+                    'count': 1
+                }
+            ]
+        },
+        headers={
+            'token': token
         }
     )
+    global order_id
+    order_id = eval(ret.text)['order_id']
     print(ret.status_code, ret.content)
 
-def login():
-    print('login:', end='\t\t')
-    global token
+def add_funds():
+    print('add_funds:', end='\t')
     ret = requests.post(
-        urljoin(base_url, '/auth/login'),
+        urljoin(base_url, '/buyer/add_funds'),
         json={
             'user_id': 'admin',
-            'password': 'admin'
-        }
-    )
-    ret_dict = eval(ret.text)
-    token = ret_dict['token']
-    print(ret.status_code, ret.content)
-
-def unregister():
-    print('unregister:', end='\t')
-    ret = requests.post(
-        urljoin(base_url, '/auth/unregister'),
-        json={
             'password': 'admin',
-            'user_id': 'admin'
-        }
-    )
-    print(ret.status_code, ret.content)
-
-def logout():
-    print('logout:', end='\t\t')
-    ret = requests.post(
-        urljoin(base_url, '/auth/logout'),
-        json={
-            'user_id': 'admin'
+            'add_value': 100
         },
         headers={
             'token': token
@@ -53,25 +45,25 @@ def logout():
     )
     print(ret.status_code, ret.content)
 
-def change_password():
-    print('change_password:', end='\t')
+def payment():
+    print('payment:', end='\t\t')
     ret = requests.post(
-        urljoin(base_url, '/auth/password'),
+        urljoin(base_url, '/buyer/payment'),
         json={
             'user_id': 'admin',
-            'oldPassword': 'admin',
-            'newPassword': 'admin'
+            'password': 'admin',
+            'order_id': order_id
+        },
+        headers={
+            'token': token
         }
     )
     print(ret.status_code, ret.content)
 
 working_list = [
-    register,
     login,
-    change_password,
-    login,
-    logout,
-    unregister
+    new_order,
+    logout
 ]
 
 if __name__ == '__main__':
