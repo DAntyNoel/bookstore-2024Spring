@@ -7,6 +7,7 @@ import requests
 import random
 import time
 import logging
+from typing import List
 
 user_agent = [
     "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 "
@@ -146,17 +147,28 @@ class Scraper:
             logging.error(str(e))
             conn.rollback()
 
+    def get_tag_list(self) -> List[str]:
+        ret = []
+        conn = sqlite3.connect(self.database)
+        results = conn.execute(
+            "SELECT tags.tag from tags join progress where tags.tag >= progress.tag"
+        )
+        for row in results:
+            ret.append(row[0])
+        return ret
+
     def grab_tag(self):
         url = "https://book.douban.com/tag/?view=cloud"
         r = requests.get(url, headers=get_user_agent())
         r.encoding = "utf-8"
         h: etree.ElementBase = etree.HTML(r.text)
-        tags: [] = h.xpath(
+        tags: list = h.xpath(
             '/html/body/div[@id="wrapper"]/div[@id="content"]'
             '/div[@class="grid-16-8 clearfix"]/div[@class="article"]'
             '/div[@class=""]/div[@class="indent tag_cloud"]'
             "/table/tbody/tr/td/a/@href"
         )
+        print(tags)
         conn = sqlite3.connect(self.database)
         c = conn.cursor()
         try:
@@ -178,9 +190,9 @@ class Scraper:
         url = "https://book.douban.com/tag/{}?start={}&type=T".format(tag, pageno)
         r = requests.get(url, headers=get_user_agent())
         r.encoding = "utf-8"
-        h: etree.Element = etree.HTML(r.text)
+        h: etree.ElementBase = etree.HTML(r.text)
 
-        li_list: [] = h.xpath(
+        li_list: list = h.xpath(
             '/html/body/div[@id="wrapper"]/div[@id="content"]'
             '/div[@class="grid-16-8 clearfix"]'
             '/div[@class="article"]/div[@id="subject_list"]'
@@ -210,16 +222,6 @@ class Scraper:
                     logging.error("error when scrape {}, {}".format(book_id, str(e)))
                 )
         return has_next
-
-    def get_tag_list(self) -> [str]:
-        ret = []
-        conn = sqlite3.connect(self.database)
-        results = conn.execute(
-            "SELECT tags.tag from tags join progress where tags.tag >= progress.tag"
-        )
-        for row in results:
-            ret.append(row[0])
-        return ret
 
     def crow_book_info(self, book_id) -> bool:
         conn = sqlite3.connect(self.database)
