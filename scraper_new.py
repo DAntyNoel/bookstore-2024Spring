@@ -4,7 +4,7 @@ from be.model.mongo_classes import (
     NewOrderMongo,
     StoreMongo,
     UserMongo,
-    BookMongo,
+    BookInfoMongo,
     UserStoreMongo,
 )
 from be.model.mongo_conn import connect_mongo
@@ -78,9 +78,9 @@ def get_user_agent():
 
 class DoubanTagScraper:
     def __init__(self, mongodb=False):
-        self.database = 'book.db'
+        self.database = 'scraper.db'
         self.mongodb = mongodb
-        logging.basicConfig(filename="scraper.log", level=logging.WARNING)
+        logging.basicConfig(filename="scraper.log", level=logging.ERROR)
         print('Scraper in progress. Check scraper.log for details.')
     def save_current_progress(self, current_tag, current_page):
         conn = sqlite3.connect(self.database)
@@ -193,7 +193,7 @@ class DoubanTagScraper:
     def crow_book_info(self, book_id) -> bool:
         logging.info(f'Start to grab book: {book_id}')
         if self.mongodb:
-            book = BookMongo.objects(book_id=book_id).first()
+            book = BookInfoMongo.objects(book_id=book_id).first()
             if book:
                 logging.warning(f"book {book_id} already exists")
                 return
@@ -242,8 +242,11 @@ class DoubanTagScraper:
         # tags = '\n'.join([a.text.strip() for a in soup.select('#db-tags-section .indent span a')])
 
         # 抓取书籍图片
-        pic_href = soup.select_one('#mainpic a')['href'] if soup.select_one('#mainpic a') else None
-        picture = requests.get(pic_href).content if pic_href else None ## ok
+        section = soup.select('#mainpic a')
+        pictures = []
+        for x in section:
+            pic_href = x['href']
+            pictures.append(requests.get(pic_href).content)
 
         # 抓取书籍信息
         info_text = soup.select_one('#info').get_text()
@@ -276,19 +279,19 @@ class DoubanTagScraper:
             publisher, original_title, translator, 
             pub_time, pages, price, 
             currency_unit, binding, isbn, 
-            author_intro, book_intro, picture)
+            author_intro, book_intro, pictures)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """
 
         try:
             if self.mongodb:
                 translator = translator.split('/') if translator else ['未知']
-                book = BookMongo(
+                book = BookInfoMongo(
                     book_id=book_id, title=title, author=author,
                     publisher=publisher, original_title=original_title, translator=translator,
                     pub_time=pub_time, pages=pages, price=price,
                     currency_unit=currency_unit, binding=binding, isbn=isbn,
-                    author_intro=author_intro, book_intro=book_intro, picture=picture
+                    author_intro=author_intro, book_intro=book_intro, pictures=pictures
                 )
                 book.save(force_insert=True)
             else:
@@ -297,7 +300,7 @@ class DoubanTagScraper:
                     publisher, original_title, translator,
                     pub_time, pages, price,
                     currency_unit, binding, isbn,
-                    author_intro, book_intro, picture
+                    author_intro, book_intro, pictures
                 ))
                 conn.commit()
             logging.info( f'Write to {"mongodb" if self.mongodb else self.database} Success!\n',
