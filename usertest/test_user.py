@@ -5,8 +5,8 @@ def register():
     ret = requests.post(
         urljoin(base_url, '/auth/register'),
         json={
-            'user_id': 'admin',
-            'password': 'admin'
+            'user_id': Globals.user_id,
+            'password': Globals.password
         }
     )
     print(ret.status_code, ret.content)
@@ -16,27 +16,27 @@ def login():
     ret = requests.post(
         urljoin(base_url, '/auth/login'),
         json={
-            'user_id': 'admin',
-            'password': 'admin'
+            'user_id': Globals.user_id,
+            'password': Globals.password
         }
     )
     if ret.status_code == 401:
         ret = requests.post(
             urljoin(base_url, '/auth/register'),
             json={
-                'user_id': 'admin',
-                'password': 'admin'
+                'user_id': Globals.user_id,
+                'password': Globals.password
             }
         )
         ret = requests.post(
             urljoin(base_url, '/auth/login'),
             json={
-                'user_id': 'admin',
-                'password': 'admin'
+                'user_id': Globals.user_id,
+                'password': Globals.password
             }
         )
     ret_dict = eval(ret.text)
-    Token.token = ret_dict['token']
+    Globals.token = ret_dict['token']
     print(ret.status_code, ret.content)
 
 @print_format_prefix
@@ -44,8 +44,8 @@ def unregister():
     ret = requests.post(
         urljoin(base_url, '/auth/unregister'),
         json={
-            'password': 'admin',
-            'user_id': 'admin'
+            'user_id': Globals.user_id,
+            'password': Globals.password
         }
     )
     print(ret.status_code, ret.content)
@@ -55,10 +55,10 @@ def logout():
     ret = requests.post(
         urljoin(base_url, '/auth/logout'),
         json={
-            'user_id': 'admin'
+            'user_id': Globals.user_id
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -66,15 +66,17 @@ def logout():
 @require_login
 @print_format_prefix
 def change_password():
+    new_password = 'new_password'
     ret = requests.post(
         urljoin(base_url, '/auth/password'),
         json={
-            'user_id': 'admin',
-            'oldPassword': 'admin',
-            'newPassword': 'admin'
+            'user_id': Globals.user_id,
+            'oldPassword': Globals.password,
+            'newPassword': new_password
         }
     )
-    Token.token = ''
+    Globals.password = new_password
+    Globals.token = ''
     print(ret.status_code, ret.content)
 
 working_list = [

@@ -2,14 +2,16 @@ import requests
 from urllib.parse import urljoin
 import argparse
 
-class Token:
+class Globals:
     token = ''
+    user_id = 'admin'
+    password = 'admin'
 
 base_url = 'http://127.0.0.1:5000'
 
 def require_login(func):
     def wrapper(*args, **kwargs):
-        if Token.token == '':
+        if Globals.token == '':
             _autologin()
         func(*args, **kwargs)
 
@@ -58,7 +60,7 @@ def _autologin():
             }
         )
     ret_dict = eval(ret.text)
-    Token.token = ret_dict['token']
+    Globals.token = ret_dict['token']
     print(ret.status_code, ret.content)
 
 @print_format_prefix
@@ -69,7 +71,7 @@ def _autologout():
             'user_id': 'admin'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)

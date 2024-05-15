@@ -6,11 +6,11 @@ def create_store():
     ret = requests.post(
         urljoin(base_url, '/seller/create_store'),
         json={
-            'user_id': 'admin',
+            'user_id': Globals.user_id,
             'store_id': 'store_1'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -21,13 +21,13 @@ def add_book():
     ret = requests.post(
         urljoin(base_url, '/seller/add_book'),
         json={
-            'user_id': 'admin',
+            'user_id': Globals.user_id,
             'store_id': 'store_1',
             'book_id': '10539399',
             'stock_level': 10
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -38,13 +38,13 @@ def add_stock_level():
     ret = requests.post(
         urljoin(base_url, '/seller/add_stock_level'),
         json={
-            'user_id': 'admin',
+            'user_id': Globals.user_id,
             'store_id': 'store_1',
             'book_id': '10539399',
             'add_stock_level': 10
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -58,7 +58,7 @@ def add_book_info():
             'book_info_json': '{"book_id": "1145141919810", "title": "test", "price": 666}'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -72,7 +72,7 @@ def update_book_info():
             'book_info_json': '{"book_id": "1145141919810", "title": "newtitle", "price": 999}'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -86,7 +86,7 @@ def delete_book_info():
             'book_id': '1145141919810'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -97,12 +97,12 @@ def delete_store():
     ret = requests.post(
         urljoin(base_url, '/seller/delete_store'),
         json={
-            'user_id': 'admin',
+            'user_id': Globals.user_id,
             'store_id': 'store_1',
-            'password': 'admin'
+            'password': Globals.password
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
@@ -116,7 +116,7 @@ def get_store_info():
             'user_id': 'admin'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     if ret.status_code != 200:
@@ -134,7 +134,7 @@ def get_book_info():
             'book_id': '1145141919810'
         },
         headers={
-            'token': Token.token
+            'token': Globals.token
         }
     )
     if ret.status_code != 200:

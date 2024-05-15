@@ -11,7 +11,10 @@ bp_seller = Blueprint("seller", __name__, url_prefix="/seller")
 def seller_create_store():
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
+    token: str = request.headers.get("token")
     s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
     code, message = s.create_store(user_id, store_id)
     return jsonify({"message": message}), code
 
@@ -22,8 +25,10 @@ def seller_add_book():
     store_id: str = request.json.get("store_id")
     book_id: str = request.json.get("book_id")
     stock_level: str = request.json.get("stock_level", 0)
-
+    token: str = request.headers.get("token")
     s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
     code, message = s.add_book(
         user_id, store_id, book_id, stock_level
     )
@@ -38,7 +43,10 @@ def add_stock_level():
     book_id: str = request.json.get("book_id")
     add_num: str = request.json.get("add_stock_level", 0)
 
+    token: str = request.headers.get("token")
     s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
     code, message = s.add_stock_level(user_id, store_id, book_id, add_num)
 
     return jsonify({"message": message}), code
@@ -69,14 +77,20 @@ def delete_store():
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
     password: str = request.json.get("password")
+    token: str = request.headers.get("token")
     s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
     code, message = s.delete_store(user_id, store_id, password)
     return jsonify({"message": message}), code
 
 @bp_seller.route("/get_store_info", methods=["POST", "GET"])
 def get_store_info():
     user_id: str = request.json.get("user_id")
+    token: str = request.headers.get("token")
     s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
     code, message, store_infos = s.get_store_info(user_id)
     return jsonify({"message": message, "store_infos": store_infos}), code
 

@@ -7,3 +7,6 @@ pre - commit
 pytest
 PyJWT
 requests
+pymongo
+beautifulsoup4
+mongoengine
