@@ -1,6 +1,7 @@
-/be.db
+**/*.db
 **/__pycache__
 /app.log
 /test*
 /test/**
 **/protected*
+**/*.log

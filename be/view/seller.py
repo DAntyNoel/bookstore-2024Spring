@@ -20,12 +20,12 @@ def seller_create_store():
 def seller_add_book():
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
-    book_info: str = request.json.get("book_info")
+    book_id: str = request.json.get("book_id")
     stock_level: str = request.json.get("stock_level", 0)
 
     s = seller.Seller()
     code, message = s.add_book(
-        user_id, store_id, book_info.get("id"), json.dumps(book_info), stock_level
+        user_id, store_id, book_id, stock_level
     )
 
     return jsonify({"message": message}), code
@@ -42,3 +42,47 @@ def add_stock_level():
     code, message = s.add_stock_level(user_id, store_id, book_id, add_num)
 
     return jsonify({"message": message}), code
+
+@bp_seller.route("/add_book_info", methods=["POST"])
+def add_book_info():
+    book_info_json_str: str = request.json.get("book_info_json")
+    s = seller.Seller()
+    code, message = s.add_book_info(book_info_json_str)
+    return jsonify({"message": message}), code
+
+@bp_seller.route("/update_book_info", methods=["POST"])
+def update_book_info():
+    book_info_json_str: str = request.json.get("book_info_json")
+    s = seller.Seller()
+    code, message = s.update_book_info(book_info_json_str)
+    return jsonify({"message": message}), code
+
+@bp_seller.route("/delete_book_info", methods=["POST"])
+def delete_book_info():
+    book_id: str = request.json.get("book_id")
+    s = seller.Seller()
+    code, message = s.delete_book_info(book_id)
+    return jsonify({"message": message}), code
+
+@bp_seller.route("/delete_store", methods=["POST"])
+def delete_store():
+    user_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id")
+    password: str = request.json.get("password")
+    s = seller.Seller()
+    code, message = s.delete_store(user_id, store_id, password)
+    return jsonify({"message": message}), code
+
+@bp_seller.route("/get_store_info", methods=["POST", "GET"])
+def get_store_info():
+    user_id: str = request.json.get("user_id")
+    s = seller.Seller()
+    code, message, store_infos = s.get_store_info(user_id)
+    return jsonify({"message": message, "store_infos": store_infos}), code
+
+@bp_seller.route("/get_book_info", methods=["POST", "GET"])
+def get_book_info():
+    book_id: str = request.json.get("book_id")
+    s = seller.Seller()
+    code, message, book_info = s.get_book_info(book_id)
+    return jsonify({"message": message, "book_info": book_info}), code
