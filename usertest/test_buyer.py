@@ -1,20 +1,15 @@
-import requests
-from urllib.parse import urljoin
-import argparse
-
-from test_user import login, logout
-
-base_url = 'http://127.0.0.1:5000'
-token = None
+from utils import *
 order_id = None
 
+@require_login
+@print_format_prefix
 def new_order():
-    print('new_order:', end='\t')
+    global order_id
     ret = requests.post(
         urljoin(base_url, '/buyer/new_order'),
         json={
-            'user_id': 'admin',
-            'order_id': 'order_1',
+            'user_id': Globals.user_id,
+            'store_id': 'store_1',
             'books':[
                 {
                     'id': '10539399',
@@ -23,63 +18,48 @@ def new_order():
             ]
         },
         headers={
-            'token': token
+            'token': Globals.token
         }
     )
-    global order_id
     order_id = eval(ret.text)['order_id']
     print(ret.status_code, ret.content)
 
+@require_login
+@print_format_prefix
 def add_funds():
-    print('add_funds:', end='\t')
     ret = requests.post(
         urljoin(base_url, '/buyer/add_funds'),
         json={
-            'user_id': 'admin',
-            'password': 'admin',
-            'add_value': 100
+            'user_id': Globals.user_id,
+            'password': Globals.password,
+            'add_value': -100
         },
         headers={
-            'token': token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
 
+@require_login
+@print_format_prefix
 def payment():
-    print('payment:', end='\t\t')
     ret = requests.post(
         urljoin(base_url, '/buyer/payment'),
         json={
-            'user_id': 'admin',
-            'password': 'admin',
+            'user_id': Globals.user_id,
+            'password': Globals.password,
             'order_id': order_id
         },
         headers={
-            'token': token
+            'token': Globals.token
         }
     )
     print(ret.status_code, ret.content)
 
 working_list = [
-    login,
     new_order,
-    logout
+    add_funds,
+    payment
 ]
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Test user functions')
-    parser.add_argument('-f', type=str, help='Function to test', default=['all'], dest='function', nargs='+') 
-    args = parser.parse_args()
-
-    choice_dict = {
-        'all': lambda: [func() for func in working_list]
-    }
-    for func in working_list:
-        choice_dict[func.__name__] = func
-
-    try:
-        for func in args.function:
-            choice_dict[func]()
-    except KeyError:
-        print(f'Invalid function name: {func}(from {args.function})')
-        exit(1)
+main(working_list)
