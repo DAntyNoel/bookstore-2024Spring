@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask import request
-from flask import jsonify
+from flask import jsonify, redirect, url_for
 from be.model import seller
 import json
 
@@ -84,19 +84,12 @@ def delete_store():
     code, message = s.delete_store(user_id, store_id, password)
     return jsonify({"message": message}), code
 
-@bp_seller.route("/get_store_info", methods=["POST", "GET"])
+@bp_seller.route("/get_store_info", methods=["POST"])
 def get_store_info():
     user_id: str = request.json.get("user_id")
-    token: str = request.headers.get("token")
-    s = seller.Seller()
-    if not s.check_token(user_id, token):
-        return jsonify({"message": "Login expired."}), 301
-    code, message, store_infos = s.get_store_info(user_id)
-    return jsonify({"message": message, "store_infos": store_infos}), code
+    return redirect(url_for("info.stores_info", id=user_id))
 
-@bp_seller.route("/get_book_info", methods=["POST", "GET"])
+@bp_seller.route("/get_book_info", methods=["POST"])
 def get_book_info():
     book_id: str = request.json.get("book_id")
-    s = seller.Seller()
-    code, message, book_info = s.get_book_info(book_id)
-    return jsonify({"message": message, "book_info": book_info}), code
+    return redirect(url_for("info.book_info", id=book_id))

@@ -1,8 +1,6 @@
 import sqlite3 as sqlite
 import uuid
 import json
-import logging
-# from be.model import db_conn
 from be.model.mongo_classes import (
     BaseMongo,
     NewOrderDetailMongo,
@@ -10,7 +8,6 @@ from be.model.mongo_classes import (
     StoreMongo,
     UserMongo,
     UserStoreMongo,
-    Document,
     QuerySet
 )
 from be.model import error
@@ -39,7 +36,7 @@ class Buyer(BaseMongo):
                     return error.error_non_exist_book_id(book_id) + (order_id,)
                 stock_level = row.stock_level
                 book_info = row.book_info
-                book_info_json = json.loads(book_info)
+                book_info_json = json.loads(book_info.to_json())
                 price = book_info_json.get("price")
 
                 if stock_level < count:
@@ -58,10 +55,8 @@ class Buyer(BaseMongo):
             new_order.save()
             order_id = uid
         except mongoengine.errors.MongoEngineException as e:
-            logging.info("528, {}".format(str(e)))
             return 528, "{}".format(str(e)), ""
         except BaseException as e:
-            logging.info("530, {}".format(str(e)))
             return 530, "{}".format(str(e)), ""
 
         return 200, "ok", order_id
@@ -145,7 +140,7 @@ class Buyer(BaseMongo):
             user.balance += add_value
             user.save()
 
-        except sqlite.Error as e:
+        except mongoengine.errors.MongoEngineException as e:
             return 528, "{}".format(str(e))
         except BaseException as e:
             return 530, "{}".format(str(e))

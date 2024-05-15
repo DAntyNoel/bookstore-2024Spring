@@ -3,8 +3,6 @@ from flask import request
 from flask import jsonify
 from be.model.buyer import Buyer
 
-from typing import List, Tuple
-
 bp_buyer = Blueprint("buyer", __name__, url_prefix="/buyer")
 
 

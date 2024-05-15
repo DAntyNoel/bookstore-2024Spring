@@ -108,6 +108,9 @@ class BaseMongo:
     def check_token(self, user_id: str, token: str) -> bool:
         return UserMongo.query(user_id=user_id, token=token).count() > 0
     
+    def exist_token(self, token: str) -> bool:
+        return UserMongo.query(token=token).count() > 0
+    
 
 def join_mongo(from_:Union[str, Document], localField:str, foreignField:str, as_:str) -> List[Dict]:
     '''
