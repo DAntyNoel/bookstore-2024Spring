@@ -25,6 +25,21 @@ def login():
             'password': 'admin'
         }
     )
+    if ret.status_code == 401:
+        ret = requests.post(
+            urljoin(base_url, '/auth/register'),
+            json={
+                'user_id': 'admin',
+                'password': 'admin'
+            }
+        )
+        ret = requests.post(
+            urljoin(base_url, '/auth/login'),
+            json={
+                'user_id': 'admin',
+                'password': 'admin'
+            }
+        )
     ret_dict = eval(ret.text)
     token = ret_dict['token']
     print(ret.status_code, ret.content)
@@ -54,7 +69,7 @@ def logout():
     print(ret.status_code, ret.content)
 
 def change_password():
-    print('change_password:', end='\t')
+    print('change_password:', end='')
     ret = requests.post(
         urljoin(base_url, '/auth/password'),
         json={
