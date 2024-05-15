@@ -1,4 +1,5 @@
 error_code = {
+    301: "login expired.",
     401: "authorization fail.",
     511: "non exist user id {}",
     512: "exist user id {}",
@@ -70,6 +71,10 @@ def error_not_sufficient_funds(order_id):
 def error_authorization_fail():
     traceback.print_stack()
     return 401, error_code[401]
+
+def error_login_expired():
+    traceback.print_stack()
+    return 301, error_code[301]
 
 
 def error_and_message(code, message):
