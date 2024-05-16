@@ -66,7 +66,12 @@ class GetInfo(BaseMongo):
             order_info = NewOrderMongo.query(order_id=order_id).first()
             if order_info is None:
                 return error.error_invalid_order_id(order_id) + ({},)
-            order_detail_infos = [x.to_json() for x in NewOrderDetailMongo.query(order_id=order_id).only('book_id', 'count', 'price').all()]
+            order_detail_infos = [{
+                "book_id": x.book_id,
+                "count": x.count,
+                "price": x.price
+            
+            } for x in NewOrderDetailMongo.query(order_id=order_id).only('book_id', 'count', 'price').all()]
             print(order_detail_infos)
             return 200, "ok", json.dumps({
                 "order_id": order_info.order_id,
