@@ -88,4 +88,5 @@ working_list = [
     unregister
 ]
 
-main(working_list)
+if __name__ == '__main__':
+    main(working_list)

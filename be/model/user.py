@@ -6,7 +6,7 @@ import sqlite3 as sqlite
 import pymongo.errors
 from be.model import error
 # from be.model import db_conn
-from be.model.mongo_classes import UserMongo
+from be.model.mongo_classes import UserMongo, UserStoreMongo, StoreMongo
 import mongoengine.errors
 from typing import Tuple
 
@@ -135,6 +135,10 @@ class User:
                 result[0].delete()
             else:
                 return error.error_authorization_fail()
+            user_stores = [x for x in UserStoreMongo.query(user_id=user_id)]
+            for userstore in user_stores:
+                StoreMongo.query(store_id=userstore.store_id).delete()
+                userstore.delete()
         except mongoengine.errors.MongoEngineException as e:
             return 528, "{}".format(str(e))
         except BaseException as e:

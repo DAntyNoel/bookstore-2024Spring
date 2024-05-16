@@ -6,6 +6,9 @@ class Globals:
     token = ''
     user_id = 'admin'
     password = 'admin'
+    order_id = ''
+    store_id = 'store_1'
+    book_id = '10539399'
 
 base_url = 'http://127.0.0.1:5000'
 

@@ -1,10 +1,8 @@
 from utils import *
-order_id = None
 
 @require_login
 @print_format_prefix
 def new_order():
-    global order_id
     ret = requests.post(
         urljoin(base_url, '/buyer/new_order'),
         json={
@@ -12,7 +10,7 @@ def new_order():
             'store_id': 'store_1',
             'books':[
                 {
-                    'id': '10539399',
+                    'id': Globals.book_id,
                     'count': 1
                 }
             ]
@@ -21,7 +19,7 @@ def new_order():
             'token': Globals.token
         }
     )
-    order_id = eval(ret.text)['order_id']
+    Globals.order_id = eval(ret.text)['order_id']
     print(ret.status_code, ret.content)
 
 @require_login
@@ -32,7 +30,7 @@ def add_funds():
         json={
             'user_id': Globals.user_id,
             'password': Globals.password,
-            'add_value': -100
+            'add_value': 100
         },
         headers={
             'token': Globals.token
@@ -48,7 +46,7 @@ def payment():
         json={
             'user_id': Globals.user_id,
             'password': Globals.password,
-            'order_id': order_id
+            'order_id': Globals.order_id
         },
         headers={
             'token': Globals.token
@@ -62,4 +60,5 @@ working_list = [
     payment
 ]
 
-main(working_list)
+if __name__ == '__main__':
+    main(working_list)

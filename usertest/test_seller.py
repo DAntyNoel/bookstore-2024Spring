@@ -7,7 +7,7 @@ def create_store():
         urljoin(base_url, '/seller/create_store'),
         json={
             'user_id': Globals.user_id,
-            'store_id': 'store_1'
+            'store_id': Globals.store_id
         },
         headers={
             'token': Globals.token
@@ -22,8 +22,8 @@ def add_book():
         urljoin(base_url, '/seller/add_book'),
         json={
             'user_id': Globals.user_id,
-            'store_id': 'store_1',
-            'book_id': '10539399',
+            'store_id': Globals.store_id,
+            'book_id': Globals.book_id,
             'stock_level': 10
         },
         headers={
@@ -39,8 +39,8 @@ def add_stock_level():
         urljoin(base_url, '/seller/add_stock_level'),
         json={
             'user_id': Globals.user_id,
-            'store_id': 'store_1',
-            'book_id': '10539399',
+            'store_id': Globals.store_id,
+            'book_id': Globals.book_id,
             'add_stock_level': 10
         },
         headers={
@@ -98,7 +98,7 @@ def delete_store():
         urljoin(base_url, '/seller/delete_store'),
         json={
             'user_id': Globals.user_id,
-            'store_id': 'store_1',
+            'store_id': Globals.store_id,
             'password': Globals.password
         },
         headers={
@@ -159,4 +159,5 @@ working_list = [
     delete_store
 ]
 
-main(working_list)
+if __name__ == '__main__':
+    main(working_list)
