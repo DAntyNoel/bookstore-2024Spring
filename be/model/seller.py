@@ -16,6 +16,49 @@ class Seller(BaseMongo):
         self,
         user_id: str,
         store_id: str,
+        raw_book_info: dict,
+        stock_level: str,
+    ):
+        try:
+            if not self.user_id_exist(user_id):
+                return error.error_non_exist_user_id(user_id)
+            if not self.store_id_exist(store_id):
+                return error.error_non_exist_store_id(store_id)
+            book_info_json = raw_book_info
+            if "id" in book_info_json:
+                book_info_json["book_id"] = book_info_json["id"]
+                del book_info_json["id"]
+            if "pub_year" in book_info_json:
+                book_info_json["pub_time"] = book_info_json["pub_year"]
+                del book_info_json["pub_year"]
+            if "tags" in book_info_json:
+                del book_info_json["tags"]
+            if "content" in book_info_json:
+                del book_info_json["content"]
+            if "translator" in book_info_json:
+                book_info_json["translator"] = book_info_json["translator"].split(",") if book_info_json["translator"] else []
+            if "pictures" in book_info_json:
+                book_info_json["pictures"] = [x.encode() for x in book_info_json["pictures"]]
+            assert "book_id" in book_info_json, "book_id is required"
+            assert "title" in book_info_json, "title is required"
+            assert "price" in book_info_json, "price is required"
+            book_info = BookInfoMongo(**book_info_json)
+            book_info.save()
+            StoreMongo(store_id=store_id, book_id=book_info_json["book_id"], book_info=book_info, stock_level=stock_level).save()
+        except json.JSONDecodeError as e:
+            return 406, "{}".format(str(e))
+        except AssertionError as e:
+            return 400, "{}".format(str(e))
+        except mongoengine.errors.MongoEngineException as e:
+            return 528, "{}".format(str(e))
+        except BaseException as e:
+            return 530, "{}".format(str(e))
+        return 200, "ok"
+
+    def add_book_by_id(
+        self,
+        user_id: str,
+        store_id: str,
         book_id: str,
         stock_level: int,
     ):

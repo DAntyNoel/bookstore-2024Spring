@@ -11,6 +11,8 @@ from be.view import (
 )
 
 from be.model.mongo_conn import connect_mongo
+import threading
+init_completed_event = threading.Event()
 
 bp_shutdown = Blueprint("shutdown", __name__)
 bp_welcome = Blueprint('welcome', __name__)
@@ -20,16 +22,20 @@ def welcome():
     return "bookstore started successfully!", 200
 
 def shutdown_server():
-    func = request.environ.get("werkzeug.server.shutdown")
-    if func is None:
-        raise RuntimeError("Not running with the Werkzeug Server")
-    func()
+    # func = request.environ.get("werkzeug.server.shutdown")
+    # if func is None:
+    #     raise RuntimeError("Not running with the Werkzeug Server")
+    # func()
+    print('Please stop the server manually')
 
 
 @bp_shutdown.route("/shutdown")
 def be_shutdown():
-    shutdown_server()
-    return "Server shutting down..."
+    try:
+        shutdown_server()
+    except Exception as e:
+        print(e)
+    return "Server shutting down...", 400
 
 
 def be_run():
@@ -46,15 +52,13 @@ def be_run():
     logging.getLogger().addHandler(handler)
 
     app = Flask(__name__)
-    app.debug = True
+    # app.debug = True
     app.register_blueprint(bp_shutdown)
     app.register_blueprint(bp_welcome)
     app.register_blueprint(auth.bp_auth)
     app.register_blueprint(seller.bp_seller)
     app.register_blueprint(buyer.bp_buyer)
     app.register_blueprint(info.bp_info)
-    import threading
-    init_completed_event = threading.Event()
     init_completed_event.set()
 
     if connect_mongo():

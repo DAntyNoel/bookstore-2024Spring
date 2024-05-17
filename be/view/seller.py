@@ -19,8 +19,8 @@ def seller_create_store():
     return jsonify({"message": message}), code
 
 
-@bp_seller.route("/add_book", methods=["POST"])
-def seller_add_book():
+@bp_seller.route("/add_book_by_id", methods=["POST"])
+def seller_add_book_by_id():
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
     book_id: str = request.json.get("book_id")
@@ -29,10 +29,23 @@ def seller_add_book():
     s = seller.Seller()
     if not s.check_token(user_id, token):
         return jsonify({"message": "Login expired."}), 301
-    code, message = s.add_book(
+    code, message = s.add_book_by_id(
         user_id, store_id, book_id, stock_level
     )
 
+    return jsonify({"message": message}), code
+
+@bp_seller.route("/add_book", methods=["POST"])
+def seller_add_book():
+    user_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id")
+    stock_level: str = request.json.get("stock_level", 0)
+    book_info: dict = request.json.get("book_info")
+    token: str = request.headers.get("token")
+    s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
+    code, message = s.add_book(user_id, store_id, book_info, stock_level)
     return jsonify({"message": message}), code
 
 

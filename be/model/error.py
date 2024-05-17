@@ -21,62 +21,74 @@ error_code = {
     528: "",
 }
 
+DEBUG = False
 import traceback
 
 def error_non_exist_user_id(user_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 511, error_code[511].format(user_id)
 
-
 def error_exist_user_id(user_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 512, error_code[512].format(user_id)
 
 
 def error_non_exist_store_id(store_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 513, error_code[513].format(store_id)
 
 
 def error_exist_store_id(store_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 514, error_code[514].format(store_id)
 
 
 def error_non_exist_book_id(book_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 515, error_code[515].format(book_id)
 
 
 def error_exist_book_id(book_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 516, error_code[516].format(book_id)
 
 
 def error_stock_level_low(book_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 517, error_code[517].format(book_id)
 
 
 def error_invalid_order_id(order_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 518, error_code[518].format(order_id)
 
 
 def error_not_sufficient_funds(order_id):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 519, error_code[518].format(order_id)
 
 
 def error_authorization_fail():
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 401, error_code[401]
 
 def error_login_expired():
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return 301, error_code[301]
 
 
 def error_and_message(code, message):
-    traceback.print_stack()
+    if DEBUG:
+        traceback.print_stack()
     return code, message
