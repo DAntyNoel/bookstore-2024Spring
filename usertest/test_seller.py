@@ -23,8 +23,12 @@ def add_book():
         json={
             'user_id': Globals.user_id,
             'store_id': Globals.store_id,
-            'book_id': Globals.book_id,
-            'stock_level': 10
+            'stock_level': 10,
+            'book_info': {
+                'book_id': Globals.book_id,
+                'title': 'test',
+                'price': 666
+            }
         },
         headers={
             'token': Globals.token

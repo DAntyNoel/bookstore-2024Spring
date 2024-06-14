@@ -1,11 +1,5 @@
 from be.model.mongo_classes import (
-    BaseMongo,
-    NewOrderDetailMongo,
-    NewOrderMongo,
-    StoreMongo,
-    UserMongo,
-    BookInfoMongo,
-    UserStoreMongo,
+    BookInfoMongo
 )
 from be.model.mongo_conn import connect_mongo
 

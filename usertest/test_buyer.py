@@ -30,7 +30,7 @@ def add_funds():
         json={
             'user_id': Globals.user_id,
             'password': Globals.password,
-            'add_value': 100
+            'add_value': 10000
         },
         headers={
             'token': Globals.token
@@ -54,10 +54,16 @@ def payment():
     )
     print(ret.status_code, ret.content)
 
+from test_seller import create_store, delete_store, add_book, delete_book_info
+
+
 working_list = [
+    create_store,
+    add_book,
     new_order,
     add_funds,
-    payment
+    payment,
+    delete_store
 ]
 
 if __name__ == '__main__':

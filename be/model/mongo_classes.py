@@ -1,4 +1,5 @@
 from typing import Any, Union, Dict, List
+from enum import Enum
 
 from pymongo.mongo_client import MongoClient
 from mongoengine import (
@@ -6,6 +7,7 @@ from mongoengine import (
     EmbeddedDocument,
     StringField,
     IntField,
+    DateField,
     FloatField,
     ListField,
     ReferenceField,
@@ -77,16 +79,37 @@ class NewOrderMongo(Document):
     order_id = StringField(primary_key=True, required=True)
     user_id = StringField(required=True)
     store_id = StringField(required=True)
+    statecode = IntField(required=True)
+    timestamp = DateField(required=True)
 
     @staticmethod
     def query(*args, **kwargs) -> QuerySet:
         return NewOrderMongo.objects(*args, **kwargs)
+
+class OrderStateCode(Enum):
+    CREATED = 101
+    CONFIRMED = 102
+    PAID = 103
+    SHIPPED = 104
+    RECEIVED = 105
+
+    COMPLETED = 200
+
+    CANCELED_BY_SELLER = 301
+    CANCELED_BY_BUYER = 302
+    # CANCELED_BY_ADMIN = 303
+    CANCELED_DUE_TO_PAYMENT_TIMEOUT = 304
+
+class OrderStateHistory(EmbeddedDocument):
+    statecode = IntField(required=True)
+    timestamps = DateField(required=True)
     
 class NewOrderDetailMongo(Document):
     order_id = StringField(required=True)
     book_id = StringField(required=True, unique_with='order_id')
     count = IntField(required=True)
     price = FloatField(required=True)
+    history = ListField(EmbeddedDocumentField('OrderStateHistory'))
 
     @staticmethod
     def query(*args, **kwargs) -> QuerySet:

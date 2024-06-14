@@ -40,7 +40,7 @@ def seller_add_book():
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
     stock_level: str = request.json.get("stock_level", 0)
-    book_info: dict = request.json.get("book_info")
+    book_info: dict = request.json.get("book_info", {})
     token: str = request.headers.get("token")
     s = seller.Seller()
     if not s.check_token(user_id, token):

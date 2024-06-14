@@ -21,7 +21,7 @@ error_code = {
     528: "",
 }
 
-DEBUG = False
+DEBUG = True
 import traceback
 
 def error_non_exist_user_id(user_id):
@@ -74,7 +74,7 @@ def error_invalid_order_id(order_id):
 def error_not_sufficient_funds(order_id):
     if DEBUG:
         traceback.print_stack()
-    return 519, error_code[518].format(order_id)
+    return 519, error_code[519].format(order_id)
 
 
 def error_authorization_fail():

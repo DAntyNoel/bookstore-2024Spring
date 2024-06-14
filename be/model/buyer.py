@@ -4,6 +4,8 @@ import json
 from be.model.mongo_classes import (
     BaseMongo,
     NewOrderDetailMongo,
+    OrderStateCode,
+    OrderStateHistory,
     NewOrderMongo,
     StoreMongo,
     UserMongo,
@@ -13,6 +15,7 @@ from be.model.mongo_classes import (
 from be.model import error
 import mongoengine.errors
 from typing import List, Tuple
+import datetime
 
 
 class Buyer(BaseMongo):
@@ -27,6 +30,8 @@ class Buyer(BaseMongo):
                 return error.error_non_exist_store_id(store_id) + (order_id,)
             uid = "{}_{}_{}".format(user_id, store_id, str(uuid.uuid1()))
 
+            statecode = OrderStateCode.CONFIRMED.value
+            timestamp = datetime.datetime.now()
             for book_id, count in id_and_count:
                 row:StoreMongo = StoreMongo.query(store_id=store_id, book_id=book_id).filter(
                     store_id=store_id, 
@@ -48,16 +53,18 @@ class Buyer(BaseMongo):
                 store.stock_level -= count
                 store.save()
 
-                new_order_detail = NewOrderDetailMongo(order_id=uid, book_id=book_id, count=count, price=price)
+                
+                history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
+                new_order_detail = NewOrderDetailMongo(order_id=uid, book_id=book_id, count=count, price=price, history=[history])
                 new_order_detail.save()
 
-            new_order = NewOrderMongo(order_id=uid, store_id=store_id, user_id=user_id)
+            new_order = NewOrderMongo(order_id=uid, store_id=store_id, user_id=user_id, statecode=statecode, timestamp=timestamp)
             new_order.save()
             order_id = uid
         except mongoengine.errors.MongoEngineException as e:
-            return 528, "{}".format(str(e)), ""
+            return error.error_and_message(528, "{}".format(str(e))), (order_id,)
         except BaseException as e:
-            return 530, "{}".format(str(e)), ""
+            return error.error_and_message(530, "{}".format(str(e))), (order_id,)
 
         return 200, "ok", order_id
 
@@ -112,17 +119,24 @@ class Buyer(BaseMongo):
             user.balance += total_price
             user.save()
 
-            if NewOrderMongo.query(order_id=order_id).delete() == 0:
-                return error.error_invalid_order_id(order_id)
-
-            if NewOrderDetailMongo.query(order_id=order_id).delete() == 0:
-                return error.error_invalid_order_id(order_id)
+            # if NewOrderDetailMongo.query(order_id=order_id).delete() == 0:
+            #     return error.error_invalid_order_id(order_id)
+            statecode = OrderStateCode.PAID.value
+            timestamp = datetime.datetime.now()
+            history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
+            NewOrderDetailMongo.query(order_id=order_id).update(
+                push__history=history
+            )
+            NewOrderMongo.query(order_id=order_id).update(
+                set__statecode=statecode,
+                set__timestamp=timestamp
+            )
             
         except mongoengine.errors.MongoEngineException as e:
-            return 528, "{}".format(str(e))
+            return error.error_and_message(528, "{}".format(str(e)))
 
         except BaseException as e:
-            return 530, "{}".format(str(e))
+            return error.error_and_message(530, "{}".format(str(e)))
 
         return 200, "ok"
 
@@ -141,8 +155,8 @@ class Buyer(BaseMongo):
             user.save()
 
         except mongoengine.errors.MongoEngineException as e:
-            return 528, "{}".format(str(e))
+            return error.error_and_message(528, "{}".format(str(e)))
         except BaseException as e:
-            return 530, "{}".format(str(e))
+            return error.error_and_message(530, "{}".format(str(e)))
 
         return 200, "ok"
