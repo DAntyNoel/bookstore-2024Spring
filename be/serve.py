@@ -10,6 +10,7 @@ from be.view import (
     info,
     query
 )
+from be.model.scheduler import register_order_scheduler
 
 from be.model.mongo_conn import connect_mongo
 import threading
@@ -61,6 +62,7 @@ def be_run():
     app.register_blueprint(buyer.bp_buyer)
     app.register_blueprint(info.bp_info)
     app.register_blueprint(query.bp_query)
+    register_order_scheduler(app)
     init_completed_event.set()
 
     if connect_mongo():
