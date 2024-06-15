@@ -63,9 +63,14 @@ def query_book():
         ret.content[:500]
     )
 
+from test_seller import create_store, delete_store, add_book
+
 working_list = [
     query_order,
-    query_book
+    create_store,
+    add_book,
+    query_book,
+    delete_store,
 ]
 
 if __name__ == '__main__':
