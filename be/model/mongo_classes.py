@@ -135,6 +135,16 @@ class BaseMongo:
     
     def exist_order_id(self, order_id: str) -> bool:
         return NewOrderMongo.query(order_id=order_id).count() > 0
+
+    def parse_query(query, key_prefix = '') -> dict:
+        parsed_query = {}
+        for key, value in query.items():
+            if "__" in key:
+                key, op = key.split("__")
+                parsed_query[key_prefix + key] = {f"${op}": value}
+            else:
+                parsed_query[key_prefix + key] = value
+        return parsed_query
     
 
 def join_mongo(from_:Union[str, Document], localField:str, foreignField:str, as_:str) -> List[Dict]:
