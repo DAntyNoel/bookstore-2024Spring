@@ -8,7 +8,8 @@ def query_order():
     user_id = StringField(required=True)
     store_id = StringField(required=True)
     statecode = IntField(required=True)
-    timestamp = DateField(required=True)
+    timestamp = DateTimeField(required=True)
+    history = ListField(EmbeddedDocumentField('OrderStateHistory'))
     '''
     ret = requests.post(
         urljoin(base_url, '/query/order'),
@@ -19,8 +20,8 @@ def query_order():
             'token': Globals.token
         }
     )
-    dicts = eval(ret.content)
-    print(ret.status_code, (dicts))
+    dicts = eval(ret.content)['order_info']
+    print(ret.status_code, (dicts[0]['timestamp']))
 
 working_list = [
     query_order
