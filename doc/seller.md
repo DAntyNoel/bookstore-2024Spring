@@ -452,3 +452,81 @@ Body:
 book_info 字段中仅含有非空的键值对。否则将不会返回。
 ```
 
+## 卖家取消订单（New）
+
+#### URL：
+
+POST http://[address]/seller/cancel_order
+
+#### Request
+
+##### Header:
+
+| key   | 类型   | 描述               | 是否可为空 |
+| ----- | ------ | ------------------ | ---------- |
+| token | string | 登录产生的会话标识 | N          |
+
+##### Body:
+
+```json
+{
+  "user_id": "user_id",
+  "order_id": "order_id"
+}
+```
+
+##### 属性说明：
+
+| key      | 类型   | 描述       | 是否可为空 |
+| -------- | ------ | ---------- | ---------- |
+| user_id  | string | 买家用户ID | N          |
+| order_id | string | 订单ID     | N          |
+
+
+Status Code:
+
+| 码   | 描述     |
+| ---- | -------- |
+| 200  | 取消成功 |
+| 400  | 操作失败 |
+| 5XX  | 无效参数 |
+
+## 卖家确认发货（New）
+
+#### URL：
+
+POST http://[address]/seller/ship_order
+
+#### Request
+
+##### Header:
+
+| key   | 类型   | 描述               | 是否可为空 |
+| ----- | ------ | ------------------ | ---------- |
+| token | string | 登录产生的会话标识 | N          |
+
+##### Body:
+
+```json
+{
+  "user_id": "user_id",
+  "order_id": "order_id"
+}
+```
+
+##### 属性说明：
+
+| key      | 类型   | 描述       | 是否可为空 |
+| -------- | ------ | ---------- | ---------- |
+| user_id  | string | 买家用户ID | N          |
+| order_id | string | 订单ID     | N          |
+
+
+Status Code:
+
+| 码   | 描述     |
+| ---- | -------- |
+| 200  | 发货成功 |
+| 400  | 操作失败 |
+| 5XX  | 无效参数 |
+

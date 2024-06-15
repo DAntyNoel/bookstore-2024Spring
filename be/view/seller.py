@@ -106,3 +106,25 @@ def get_store_info():
 def get_book_info():
     book_id: str = request.json.get("book_id")
     return redirect(url_for("info.book_info", id=book_id))
+
+@bp_seller.route("/cancel_order", methods=["POST"])
+def cancel_order():
+    user_id: str = request.json.get("user_id")
+    order_id: str = request.json.get("order_id")
+    token: str = request.headers.get("token")
+    s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
+    code, message = s.cancel_order(user_id, order_id)
+    return jsonify({"message": message}), code
+
+@bp_seller.route("/ship_order", methods=["POST"])
+def ship_order():
+    user_id: str = request.json.get("user_id")
+    order_id: str = request.json.get("order_id")
+    token: str = request.headers.get("token")
+    s = seller.Seller()
+    if not s.check_token(user_id, token):
+        return jsonify({"message": "Login expired."}), 301
+    code, message = s.ship_order(user_id, order_id)
+    return jsonify({"message": message}), code

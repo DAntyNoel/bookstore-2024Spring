@@ -90,7 +90,7 @@ class OrderStateCode(Enum):
 
 class OrderStateHistory(EmbeddedDocument):
     statecode = IntField(required=True)
-    timestamps = DateTimeField(required=True)
+    timestamp = DateTimeField(required=True)
     
 class NewOrderMongo(Document):
     order_id = StringField(primary_key=True, required=True)

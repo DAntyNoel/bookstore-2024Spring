@@ -7,6 +7,7 @@ from be.model.mongo_classes import (
     OrderStateCode,
     OrderStateHistory,
     NewOrderMongo,
+    OrderStateCode,
     StoreMongo,
     UserMongo,
     UserStoreMongo,
@@ -32,7 +33,7 @@ class Buyer(BaseMongo):
 
             statecode = OrderStateCode.CONFIRMED.value
             timestamp = datetime.datetime.now()
-            history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
+            history = OrderStateHistory(statecode=statecode, timestamp=timestamp)
             for book_id, count in id_and_count:
                 row:StoreMongo = StoreMongo.query(store_id=store_id, book_id=book_id).filter(
                     store_id=store_id, 
@@ -76,9 +77,13 @@ class Buyer(BaseMongo):
             order_id = row.order_id
             buyer_id = row.user_id
             store_id = row.store_id
+            statecode = row.statecode
+            order = row
 
             if buyer_id != user_id:
                 return error.error_authorization_fail()
+            if statecode != OrderStateCode.CONFIRMED.value:
+                return error.error_and_message(528, 'Order cannot be paid.')
 
             row = UserMongo.query(user_id=buyer_id).only('balance', 'password').first()
             if row is None:
@@ -134,16 +139,10 @@ class Buyer(BaseMongo):
             user.balance += total_price
             user.save()
 
-            # if NewOrderDetailMongo.query(order_id=order_id).delete() == 0:
-            #     return error.error_invalid_order_id(order_id)
-            statecode = OrderStateCode.PAID.value
-            timestamp = datetime.datetime.now()
-            history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
-            NewOrderMongo.query(order_id=order_id).update(
-                set__statecode=statecode,
-                set__timestamp=timestamp,
-                push__history=history
-            )
+            order.statecode = OrderStateCode.PAID.value
+            order.timestamp = datetime.datetime.now()
+            order.history.append(OrderStateHistory(statecode=OrderStateCode.PAID.value, timestamp=order.timestamp))
+            order.save()
             
         except mongoengine.errors.MongoEngineException as e:
             return error.error_and_message(528, "{}".format(str(e)))
@@ -167,6 +166,60 @@ class Buyer(BaseMongo):
             user.balance += add_value
             user.save()
 
+        except mongoengine.errors.MongoEngineException as e:
+            return error.error_and_message(528, "{}".format(str(e)))
+        except BaseException as e:
+            return error.error_and_message(530, "{}".format(str(e)))
+
+        return 200, "ok"
+
+    def cancel_order(self, user_id: str, order_id: str) -> Tuple[int, str]:
+        try:
+            row:NewOrderMongo = NewOrderMongo.query(order_id=order_id).first()
+            if row is None:
+                return error.error_invalid_order_id(order_id)
+
+            order_id = row.order_id
+            buyer_id = row.user_id
+            statecode = row.statecode
+            order = row
+
+            if buyer_id != user_id:
+                return error.error_authorization_fail()
+            if statecode >= OrderStateCode.RECEIVED.value:
+                return error.error_and_message(528, 'Operation failed. The order cannot be canceled.')
+
+            order.statecode = OrderStateCode.CANCELED_BY_BUYER.value
+            order.timestamp = datetime.datetime.now()
+            order.history.append(OrderStateHistory(statecode=OrderStateCode.CANCELED_BY_BUYER.value, timestamp=order.timestamp))
+            order.save()
+        except mongoengine.errors.MongoEngineException as e:
+            return error.error_and_message(528, "{}".format(str(e)))
+        except BaseException as e:
+            return error.error_and_message(530, "{}".format(str(e)))
+
+        return 200, "ok"
+
+    def receive_order(self, user_id: str, order_id: str) -> Tuple[int, str]:
+        try:
+            row:NewOrderMongo = NewOrderMongo.query(order_id=order_id).first()
+            if row is None:
+                return error.error_invalid_order_id(order_id)
+
+            order_id = row.order_id
+            buyer_id = row.user_id
+            statecode = row.statecode
+            order = row
+
+            if buyer_id != user_id:
+                return error.error_authorization_fail()
+            if statecode != OrderStateCode.SHIPPED.value:
+                return error.error_and_message(528, 'Operation failed. The order cannot be confirmed.')
+
+            order.statecode = OrderStateCode.RECEIVED.value
+            order.timestamp = datetime.datetime.now()
+            order.history.append(OrderStateHistory(statecode=OrderStateCode.RECEIVED.value, timestamp=order.timestamp))
+            order.save()
         except mongoengine.errors.MongoEngineException as e:
             return error.error_and_message(528, "{}".format(str(e)))
         except BaseException as e:

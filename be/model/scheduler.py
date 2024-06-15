@@ -47,9 +47,9 @@ import datetime
 @orderScheduler.task('interval', id='order_completer', seconds=3, misfire_grace_time=900)
 def order_completer():
     log.info("Order completer running...")
-    orders = NewOrderMongo.query(statecode=OrderStateCode.RECEIVED.value)
+    orders = NewOrderMongo.query(statecode=OrderStateCode.RECEIVED.value).all()
     for order in orders:
-        statecode = OrderStateCode.COMPLETED
+        statecode = OrderStateCode.COMPLETED.value
         timestamp = datetime.datetime.now()
         history = OrderStateHistory(statecode=statecode, timestamp=timestamp)
         order.statecode = statecode
@@ -62,7 +62,7 @@ def order_completer():
 @orderScheduler.task('interval', id='order_timeout_checker', seconds=1)
 def order_timeout_checker():
     log.info("Order timeout checker running...")
-    orders = NewOrderMongo.query(statecode=OrderStateCode.PAID.value)
+    orders = NewOrderMongo.query(statecode=OrderStateCode.PAID.value).all()
     for order in orders:
         timestamp = datetime.datetime.now()
         delta =  (timestamp - order.timestamp)

@@ -54,15 +54,51 @@ def payment():
     )
     print(ret.status_code, ret.content)
 
-from test_seller import create_store, delete_store, add_book, delete_book_info
+@require_login
+@print_format_prefix
+def buyer_cancel_order():
+    ret = requests.post(
+        urljoin(base_url, '/buyer/cancel_order'),
+        json={
+            'user_id': Globals.user_id,
+            'order_id': Globals.order_id
+        },
+        headers={
+            'token': Globals.token
+        }
+    )
+    print(ret.status_code, ret.content)
+
+@require_login
+@print_format_prefix
+def receive_order():
+    ret = requests.post(
+        urljoin(base_url, '/buyer/receive_order'),
+        json={
+            'user_id': Globals.user_id,
+            'order_id': Globals.order_id
+        },
+        headers={
+            'token': Globals.token
+        }
+    )
+    print(ret.status_code, ret.content)
+
+from test_seller import create_store, delete_store, add_book, delete_book_info, ship_order, seller_cancel_order
 
 
 working_list = [
     create_store,
     add_book,
     new_order,
+    buyer_cancel_order,
+    new_order,
+    seller_cancel_order,
+    new_order,
     add_funds,
     payment,
+    ship_order,
+    receive_order,
     delete_store
 ]
 

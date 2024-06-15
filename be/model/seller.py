@@ -213,13 +213,13 @@ class Seller(BaseMongo):
                 store_infos.append(store_info)
             return 200, "ok", store_infos
         except json.JSONDecodeError as e:
-            return error.error_and_message(406, "{}".format(str(e)))
+            return error.error_and_message(406, "{}".format(str(e))) + ([],)
         except AssertionError as e:
-            return error.error_and_message(400, "{}".format(str(e)))
+            return error.error_and_message(400, "{}".format(str(e))) + ([],)
         except mongoengine.errors.MongoEngineException as e:
-            return error.error_and_message(528, "{}".format(str(e)))
+            return error.error_and_message(528, "{}".format(str(e))) + ([],)
         except BaseException as e:
-            return error.error_and_message(530, "{}".format(str(e)))
+            return error.error_and_message(530, "{}".format(str(e))) + ([],)
         
     def get_book_info(self, book_id: str) -> Tuple[int, str, dict]:
         try:
@@ -228,23 +228,66 @@ class Seller(BaseMongo):
             book_info = BookInfoMongo.query(book_id=book_id).first()
             return 200, "ok", json.loads(book_info.to_json())
         except mongoengine.errors.MongoEngineException as e:
+            return error.error_and_message(528, "{}".format(str(e))) + ({},)
+        except BaseException as e:
+            return error.error_and_message(530, "{}".format(str(e))) + ({},)
+
+    def cancel_order(self, user_id: str, order_id: str) -> Tuple[int, str]:
+        try:
+            if not self.user_id_exist(user_id):
+                return error.error_non_exist_user_id(user_id)
+            order:NewOrderMongo = NewOrderMongo.query(order_id=order_id).first()
+            if order is None:
+                return error.error_invalid_order_id(order_id)
+            if UserStoreMongo.query(user_id=user_id, store_id=order.store_id).count() == 0:
+                return error.error_forbidden()
+            assert order.statecode < OrderStateCode.COMPLETED.value, "The order is closed."
+            assert order.statecode < OrderStateCode.PAID.value, "The order is paid."
+
+            new_statecode = OrderStateCode.CANCELED_BY_SELLER.value
+            timestamp = datetime.datetime.now()
+            history = OrderStateHistory(statecode=new_statecode, timestamp=timestamp)
+
+            order.statecode = new_statecode
+            order.timestamp = timestamp
+            order.history.append(history)
+            order.save()
+            return 200, "ok"
+        except json.JSONDecodeError as e:
+            return error.error_and_message(406, "{}".format(str(e)))
+        except AssertionError as e:
+            return error.error_and_message(400, "Operation failed. {}".format(str(e)))
+        except mongoengine.errors.MongoEngineException as e:
             return error.error_and_message(528, "{}".format(str(e)))
         except BaseException as e:
             return error.error_and_message(530, "{}".format(str(e)))
 
-    # def cancel_order(self, user_id: str, order_id: str) -> Tuple[int, str]:
-    #     try:
-    #         if not self.user_id_exist(user_id):
-    #             return error.error_non_exist_user_id(user_id)
-    #         order:NewOrderMongo = NewOrderMongo.query(order_id=order_id).first()
-    #         if order is None:
-    #             return error.error_invalid_order_id(order_id)
-    #         if order.user_id != user_id:
-    #             return error.error_forbidden()
-    #         assert order.statecode < OrderStateCode.COMPLETED, "Order has been closed."
-    #         assert order.statecode < OrderStateCode.PAID, "Order is paid."
+    def ship_order(self, user_id: str, order_id: str) -> Tuple[int, str]:
+        try:
+            if not self.user_id_exist(user_id):
+                return error.error_non_exist_user_id(user_id)
+            order:NewOrderMongo = NewOrderMongo.query(order_id=order_id).first()
+            if order is None:
+                return error.error_invalid_order_id(order_id)
+            if UserStoreMongo.query(user_id=user_id, store_id=order.store_id).count() == 0:
+                return error.error_forbidden()
+            assert order.statecode >= OrderStateCode.PAID.value, "The order is not paid."
+            assert order.statecode < OrderStateCode.SHIPPED.value, "The order is already shipped."
 
-    #         new_statecode = OrderStateCode.CANCELED_BY_SELLER.value
-    #         timestamp = datetime.datetime.now()
+            new_statecode = OrderStateCode.SHIPPED.value
+            timestamp = datetime.datetime.now()
+            history = OrderStateHistory(statecode=new_statecode, timestamp=timestamp)
 
-
+            order.statecode = new_statecode
+            order.timestamp = timestamp
+            order.history.append(history)
+            order.save()
+            return 200, "ok"
+        except json.JSONDecodeError as e:
+            return error.error_and_message(406, "{}".format(str(e)))
+        except AssertionError as e:
+            return error.error_and_message(400, "Operation failed. {}".format(str(e)))
+        except mongoengine.errors.MongoEngineException as e:
+            return error.error_and_message(528, "{}".format(str(e)))
+        except BaseException as e:
+            return error.error_and_message(530, "{}".format(str(e)))

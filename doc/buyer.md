@@ -115,8 +115,6 @@ POST http://[address]/buyer/add_funds
 
 #### Request
 
-
-
 ##### Body:
 ```json
 {
@@ -142,3 +140,81 @@ Status Code:
 200 | 充值成功
 401 | 授权失败
 5XX | 无效参数
+
+## 买家取消订单（New）
+
+#### URL：
+
+POST http://[address]/buyer/cancel_order
+
+#### Request
+
+##### Header:
+
+| key   | 类型   | 描述               | 是否可为空 |
+| ----- | ------ | ------------------ | ---------- |
+| token | string | 登录产生的会话标识 | N          |
+
+##### Body:
+
+```json
+{
+  "user_id": "user_id",
+  "order_id": "order_id"
+}
+```
+
+##### 属性说明：
+
+| key      | 类型   | 描述       | 是否可为空 |
+| -------- | ------ | ---------- | ---------- |
+| user_id  | string | 买家用户ID | N          |
+| order_id | string | 订单ID     | N          |
+
+
+Status Code:
+
+| 码   | 描述     |
+| ---- | -------- |
+| 200  | 取消成功 |
+| 400  | 操作失败 |
+| 5XX  | 无效参数 |
+
+## 买家确认收货（New）
+
+#### URL：
+
+POST http://[address]/buyer/receive_order
+
+#### Request
+
+##### Header:
+
+| key   | 类型   | 描述               | 是否可为空 |
+| ----- | ------ | ------------------ | ---------- |
+| token | string | 登录产生的会话标识 | N          |
+
+##### Body:
+
+```json
+{
+  "user_id": "user_id",
+  "order_id": "order_id"
+}
+```
+
+##### 属性说明：
+
+| key      | 类型   | 描述       | 是否可为空 |
+| -------- | ------ | ---------- | ---------- |
+| user_id  | string | 买家用户ID | N          |
+| order_id | string | 订单ID     | N          |
+
+
+Status Code:
+
+| 码   | 描述     |
+| ---- | -------- |
+| 200  | 收货成功 |
+| 400  | 操作失败 |
+| 5XX  | 无效参数 |

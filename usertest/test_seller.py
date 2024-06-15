@@ -147,6 +147,37 @@ def get_book_info():
     book_info = eval(ret.text)["book_info"]
     print(ret.status_code, str(eval(ret.content))[:500])
 
+
+@require_login
+@print_format_prefix
+def seller_cancel_order():
+    ret = requests.post(
+        urljoin(base_url, '/seller/cancel_order'),
+        json={
+            'user_id': Globals.user_id,
+            'order_id': Globals.order_id
+        },
+        headers={
+            'token': Globals.token
+        }
+    )
+    print(ret.status_code, ret.content)
+
+@require_login
+@print_format_prefix
+def ship_order():
+    ret = requests.post(
+        urljoin(base_url, '/seller/ship_order'),
+        json={
+            'user_id': Globals.user_id,
+            'order_id': Globals.order_id
+        },
+        headers={
+            'token': Globals.token
+        }
+    )
+    print(ret.status_code, ret.content)
+
 working_list = [
     create_store,
     get_store_info,
