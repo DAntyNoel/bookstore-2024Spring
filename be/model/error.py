@@ -21,7 +21,7 @@ error_code = {
     528: "",
 }
 
-DEBUG = True
+DEBUG = False
 import traceback
 
 def error_non_exist_user_id(user_id):

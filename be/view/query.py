@@ -26,7 +26,6 @@ def query_book():
     if book_id is not None:
         del query["book_id"]
         query["_id"] = book_id
-    print(query.keys())
     q = QueryInfo()
     if not q.exist_token(token):
         return jsonify({"message": "Login expired."}), 301

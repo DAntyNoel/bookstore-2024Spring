@@ -24,7 +24,7 @@ So far, this reposit realize the functions only required by CDMS Project I, as t
   PYTHONPATH=. python be/app.py
   ```
 
-  You can find some interacting codes in `usertest` folder. Just run them on the other terminal.
+  You can find some interacting codes in `usertest` folder. Just run them on the other terminal. The usage of `usertest` can be found [below](#####Usage of usertest code).
 
 - (Test only) At root directory, run:
 
@@ -62,27 +62,29 @@ So far, this reposit realize the functions only required by CDMS Project I, as t
   </code></pre>
   </details>
   
-- (Test only, Recommend) Before run the test bash code, it is highly recommended to start a backend in another terminal (introduced in `Use only ` part). Afterwards running the test codes will automatically connect to the existing server and you can inspect the communications between them.
+- (Test only, Recommend) Before run the test bash code, it is highly recommended to start a backend in another terminal (introduced in `Use only` part). Afterwards running the test codes will automatically connect to the existing server and you can inspect the communications between them.
 
 - (Test only) After running the test code, the backend server will **NOT** automatically stop since the shutdown method is deprecated (The shutdown function is therefore useless). Please press `Ctrl+C` manually in the backend server.
 
-### Reports
+### Report
 
 Instead of raw query languages provided by MongoDB, which is almost the same as a highly embedded python dict, I use the ORM of MongoDB pymongo and successfully transplant from sqlite to [pymongo](https://pypi.org/project/pymongo/). 
 
 #### Databases
 
-The scrawl script (at `fe/data/scraper.py`) has failed, and I write a new scraper with BeautifulSoup (at `./scraper_new.py`). The new scraper script supports to get book information and save into MongoDB or SQLite, but modify or remove some columns such as `tags`, `pub_year`, `contents` due to the lack of such information, so it can not use directly in this test bash codes, which means you can **NOT** directly replace `fe/data/book_lx.db` with the new generated `scraper.db`. The transform is under plan. If you really want to test with another database, please download from [baidu netdisk](https://pan.baidu.com/s/1bjCOW8Z5N_ClcqU54Pdt8g) with password `hj6q`.
+The [old scrawl script](./fe/data/scraper.py) has failed, and I write a [new scraper](./scraper_new.py) with BeautifulSoup. The new scraper script supports to get book information and save into MongoDB or SQLite, but modify or remove some columns such as `tags`, `pub_year`, `contents` due to the lack of such information, so it can not use directly in this test bash codes, which means you can **NOT** directly replace `fe/data/book_lx.db` with the new generated `scraper.db`. But to run the new scraper with param specified to write in MongoDB, the program can run successfully based on the newly scraped information of books.
+
+The transform is under plan. If you really want to test with another database, please download from [baidu netdisk](https://pan.baidu.com/s/1bjCOW8Z5N_ClcqU54Pdt8g) with password `hj6q`.
 
 #### Test Results
 
-The last test results saved in [`./htmlcov-2024-6-8`](./htmlcov-2024-6-8/index.html). All tests pass but with a coverage rate only 50%. It is because I realized a lot of surrogate functions that will be use in order to function as a real bookstore system, such as `show user info`, `delete book info`, `update book info` and so on. These are actually part of the CSDN Project II.  
+The last test results saved in [`./htmlcov-2024-6-8`](./htmlcov-2024-6-8/index.html). All tests pass but with a coverage rate only 50%. It is because I realized a lot of surrogate functions that will be use in order to function as a real bookstore system, such as `show user info`, `delete book info`, `update book info` and so on. Since it is not required in the homework, I just keep them here without test codes.
 
-#### Features
+#### User Test
 
-Every functions and statements have their usage documentation in [`doc` folder](./doc), and has a relative usertest code in [`usertest` folder](./usertest).
+Every functions and statements have their usage documentation in [`doc` folder](./doc), and has a relative [`usertest` code](./usertest).
 
-##### Usage of usertest code
+##### Usage of `usertest` code
 
 - Change the directory to `usertest`
 
@@ -96,7 +98,7 @@ Every functions and statements have their usage documentation in [`doc` folder](
   python test_user.py
   ```
 
-  The test code does not go through the functions there in order, I have made some changes such that all the test results will be `200 OK` or some of custom error (error code start with 5).
+  The test code does not go through the functions there in order, I have made some changes such that all the test results will be `200 OK` or some of deliberate errors (all the error code start with 5).
 
   <details>
       <summary>Examples</summary>
@@ -146,4 +148,6 @@ Every functions and statements have their usage documentation in [`doc` folder](
       </pre>
   </details>
 
-  
+#### Scheduled System
+
+In [schedule.py](./be/model/schedule.py), I introduce a scheduler to automatically scan the database and check the state of orders. It can be extended further for future features.
