@@ -122,6 +122,15 @@ Body:
     "order_id": "$order_id$",
     "user_id": "$user_id$",
     "store_id": "$store_id$",
+    "statecode": "$state$",
+    "timestamp": "$last modified time$",
+    "history": [
+        {
+            "statecode": "$state$",
+            "timestamp": "$last modified time$",
+        },
+        ....
+    ],
     "order_detail": {
       "book_id": "$book_id$",
       "count": "$count$",

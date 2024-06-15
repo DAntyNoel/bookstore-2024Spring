@@ -1,5 +1,5 @@
 
-import json
+import json, datetime, time
 from be.model.mongo_classes import (
     BaseMongo,
     NewOrderDetailMongo,
@@ -66,25 +66,27 @@ class GetInfo(BaseMongo):
             order_info = NewOrderMongo.query(order_id=order_id).first()
             if order_info is None:
                 return error.error_invalid_order_id(order_id) + ({},)
+            order_info:dict = json.loads(order_info.to_json())
             order_detail_infos = [{
                 "book_id": x.book_id,
                 "count": x.count,
                 "price": x.price
             
             } for x in NewOrderDetailMongo.query(order_id=order_id).only('book_id', 'count', 'price').all()]
-            print(order_detail_infos)
+            # print(order_detail_infos)
             return 200, "ok", json.dumps({
-                "order_id": order_info.order_id,
-                "user_id": order_info.user_id,
-                "store_id": order_info.store_id,
+                "order_id": order_info.get("_id"),
+                "user_id": order_info.get("user_id"),
+                "store_id": order_info.get("store_id"),
+                "statecode": order_info.get("statecode"),
+                "timestamp": time.localtime(order_info.get("timestamp")['$date']),
+                "history": order_info.get("history"),
                 "order_detail": order_detail_infos
             })
         except mongoengine.errors.MongoEngineException as e:
-            return 528, "{}".format(str(e)), {}
+            return error.error_and_message(528, "{}".format(str(e))) + ({},)
         except BaseException as e:
-            import traceback
-            traceback.print_exc()
-            return 530, "{}".format(str(e)), {}
+            return error.error_and_message(530, "{}".format(str(e))) + ({},)
 
     def get_store_info(self, store_id: str) -> Tuple[int, str, dict]:
         try:

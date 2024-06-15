@@ -32,6 +32,7 @@ class Buyer(BaseMongo):
 
             statecode = OrderStateCode.CONFIRMED.value
             timestamp = datetime.datetime.now()
+            history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
             for book_id, count in id_and_count:
                 row:StoreMongo = StoreMongo.query(store_id=store_id, book_id=book_id).filter(
                     store_id=store_id, 
@@ -52,19 +53,17 @@ class Buyer(BaseMongo):
                     return error.error_stock_level_low(book_id) + (order_id,)
                 store.stock_level -= count
                 store.save()
-
                 
-                history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
-                new_order_detail = NewOrderDetailMongo(order_id=uid, book_id=book_id, count=count, price=price, history=[history])
+                new_order_detail = NewOrderDetailMongo(order_id=uid, book_id=book_id, count=count, price=price)
                 new_order_detail.save()
 
-            new_order = NewOrderMongo(order_id=uid, store_id=store_id, user_id=user_id, statecode=statecode, timestamp=timestamp)
+            new_order = NewOrderMongo(order_id=uid, store_id=store_id, user_id=user_id, statecode=statecode, timestamp=timestamp, history=[history])
             new_order.save()
             order_id = uid
         except mongoengine.errors.MongoEngineException as e:
-            return error.error_and_message(528, "{}".format(str(e))), (order_id,)
+            return error.error_and_message(528, "{}".format(str(e))) + (order_id,)
         except BaseException as e:
-            return error.error_and_message(530, "{}".format(str(e))), (order_id,)
+            return error.error_and_message(530, "{}".format(str(e))) + (order_id,)
 
         return 200, "ok", order_id
 
@@ -97,12 +96,28 @@ class Buyer(BaseMongo):
             if not self.user_id_exist(seller_id):
                 return error.error_non_exist_user_id(seller_id)
 
-            cursor:QuerySet = NewOrderDetailMongo.query(order_id=order_id).only('count', 'price')
-            total_price = 0
-            for row in cursor:
-                count = row.count
-                price = row.price
-                total_price = total_price + price * count
+            pipeline = [
+                {
+                    '$match': {
+                        'order_id': order_id  
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$order_id',  
+                        'total_price': {
+                            '$sum': {
+                                '$multiply': ['$count', '$price']  
+                            }
+                        }
+                    }
+                }
+            ]
+            result = NewOrderDetailMongo.objects.aggregate(*pipeline)
+            first_result = next(result, None)
+            if first_result is None:
+                return error.error_invalid_order_id(order_id)
+            total_price = first_result['total_price']
 
             if balance < total_price:
                 return error.error_not_sufficient_funds(order_id)
@@ -124,12 +139,10 @@ class Buyer(BaseMongo):
             statecode = OrderStateCode.PAID.value
             timestamp = datetime.datetime.now()
             history = OrderStateHistory(statecode=statecode, timestamps=timestamp)
-            NewOrderDetailMongo.query(order_id=order_id).update(
-                push__history=history
-            )
             NewOrderMongo.query(order_id=order_id).update(
                 set__statecode=statecode,
-                set__timestamp=timestamp
+                set__timestamp=timestamp,
+                push__history=history
             )
             
         except mongoengine.errors.MongoEngineException as e:

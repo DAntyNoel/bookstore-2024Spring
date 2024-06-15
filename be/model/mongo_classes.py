@@ -1,4 +1,4 @@
-from typing import Any, Union, Dict, List
+from typing import Any, Union, Dict, List, Tuple
 from enum import Enum
 
 from pymongo.mongo_client import MongoClient
@@ -8,6 +8,7 @@ from mongoengine import (
     StringField,
     IntField,
     DateField,
+    DateTimeField,
     FloatField,
     ListField,
     ReferenceField,
@@ -73,19 +74,6 @@ class StoreMongo(Document):
     def query(*args, **kwargs) -> QuerySet:
         return StoreMongo.objects(*args, **kwargs)
     
-
-    
-class NewOrderMongo(Document):
-    order_id = StringField(primary_key=True, required=True)
-    user_id = StringField(required=True)
-    store_id = StringField(required=True)
-    statecode = IntField(required=True)
-    timestamp = DateField(required=True)
-
-    @staticmethod
-    def query(*args, **kwargs) -> QuerySet:
-        return NewOrderMongo.objects(*args, **kwargs)
-
 class OrderStateCode(Enum):
     CREATED = 101
     CONFIRMED = 102
@@ -102,14 +90,25 @@ class OrderStateCode(Enum):
 
 class OrderStateHistory(EmbeddedDocument):
     statecode = IntField(required=True)
-    timestamps = DateField(required=True)
+    timestamps = DateTimeField(required=True)
+    
+class NewOrderMongo(Document):
+    order_id = StringField(primary_key=True, required=True)
+    user_id = StringField(required=True)
+    store_id = StringField(required=True)
+    statecode = IntField(required=True)
+    timestamp = DateTimeField(required=True)
+    history = ListField(EmbeddedDocumentField('OrderStateHistory'))
+
+    @staticmethod
+    def query(*args, **kwargs) -> QuerySet:
+        return NewOrderMongo.objects(*args, **kwargs)
     
 class NewOrderDetailMongo(Document):
     order_id = StringField(required=True)
     book_id = StringField(required=True, unique_with='order_id')
     count = IntField(required=True)
     price = FloatField(required=True)
-    history = ListField(EmbeddedDocumentField('OrderStateHistory'))
 
     @staticmethod
     def query(*args, **kwargs) -> QuerySet:
@@ -133,6 +132,9 @@ class BaseMongo:
     
     def exist_token(self, token: str) -> bool:
         return UserMongo.query(token=token).count() > 0
+    
+    def exist_order_id(self, order_id: str) -> bool:
+        return NewOrderMongo.query(order_id=order_id).count() > 0
     
 
 def join_mongo(from_:Union[str, Document], localField:str, foreignField:str, as_:str) -> List[Dict]:

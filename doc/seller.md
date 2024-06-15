@@ -91,7 +91,7 @@ Body:
 {
   "user_id": "$seller user id$",
   "store_id": "$store id$",
-  "book_id": "$book id$",
+  "book_info": "$book info$",
   "stock_level": 0
 }
 
@@ -103,7 +103,7 @@ Body:
 ---|---|---|---
 user_id | string | 卖家用户ID | N
 store_id | string | 商铺ID | N
-book_id | int | 书籍ID | N
+book_info | dict | 书籍详细信息 | N
 stock_level | int | 初始库存，大于等于0 | N
 
 #### Response

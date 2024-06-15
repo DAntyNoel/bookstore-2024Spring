@@ -7,7 +7,8 @@ from be.view import (
     auth,
     seller,
     buyer,
-    info
+    info,
+    query
 )
 
 from be.model.mongo_conn import connect_mongo
@@ -59,6 +60,7 @@ def be_run():
     app.register_blueprint(seller.bp_seller)
     app.register_blueprint(buyer.bp_buyer)
     app.register_blueprint(info.bp_info)
+    app.register_blueprint(query.bp_query)
     init_completed_event.set()
 
     if connect_mongo():

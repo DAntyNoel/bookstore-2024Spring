@@ -82,6 +82,16 @@ def error_authorization_fail():
         traceback.print_stack()
     return 401, error_code[401]
 
+def error_forbidden():
+    if DEBUG:
+        traceback.print_stack()
+    return 403, "forbidden."
+
+def error_not_found():
+    if DEBUG:
+        traceback.print_stack()
+    return 404, "not found."
+
 def error_login_expired():
     if DEBUG:
         traceback.print_stack()
